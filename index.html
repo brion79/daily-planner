@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>나의 플래너</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="플래너">
+<meta name="theme-color" content="#2a0f3a">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<script>window.__errs=[];window.addEventListener('error',e=>__errs.push(e.message));</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',system-ui,sans-serif;color:#f3eefa;min-height:100vh;background:linear-gradient(160deg,#3a1450 0%,#5b2266 45%,#2a0f3a 100%);background-attachment:fixed}
+.app{max-width:720px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) calc(96px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left))}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+h1{font-size:22px;font-weight:700}
+.sub{font-size:13px;opacity:.7}
+.btn{background:#2b1f33;border:none;color:#fff;border-radius:12px;padding:8px 12px;font-size:14px;cursor:pointer}
+.btn.pri{background:linear-gradient(135deg,#c86dd7,#7b4cf0)}
+.tile{background:rgba(24,16,30,.82);border-radius:20px;padding:14px;margin-bottom:12px;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.week{display:flex;gap:6px}
+.wd{flex:1;text-align:center;padding:8px 0;border-radius:14px;cursor:pointer;font-size:12px;opacity:.8}
+.wd b{display:block;font-size:17px;margin-top:2px}
+.wd.sel{background:linear-gradient(135deg,#c86dd7,#7b4cf0);opacity:1}
+.wd.today:not(.sel){outline:1px solid #c86dd7}
+.nav{display:flex;gap:6px;align-items:center;justify-content:space-between;margin-bottom:10px}
+.tlw{max-height:62vh;overflow-y:auto;border-radius:12px}.tl{position:relative}
+html{background:#2a0f3a}
+.hr{display:flex;height:56px;border-top:1px solid rgba(255,255,255,.06)}
+.hr span{width:44px;font-size:11px;opacity:.5;transform:translateY(-7px)}
+.ev{position:absolute;left:50px;right:4px;border-radius:12px;padding:4px 10px;font-size:13px;overflow:hidden;cursor:pointer;display:flex;gap:8px;align-items:flex-start;border-left:4px solid;background:rgba(255,255,255,.07)}
+.ev.now{box-shadow:0 0 0 2px #fff,0 0 18px rgba(255,255,255,.4);background:rgba(255,255,255,.16)}
+.ev small{opacity:.7;display:block;font-size:11px}
+.nowline{position:absolute;left:44px;right:0;height:2px;background:#ff5a8a;z-index:5}
+.nowline:before{content:'';position:absolute;left:-5px;top:-4px;width:10px;height:10px;border-radius:50%;background:#ff5a8a}
+.item{display:flex;align-items:center;gap:10px;padding:10px;border-radius:14px;background:rgba(255,255,255,.04);margin-bottom:8px}
+.ico{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;font-size:19px;flex-shrink:0}
+.grow{flex:1;min-width:0}
+.done .t{text-decoration:line-through;opacity:.5}
+.chk{width:22px;height:22px;accent-color:#c86dd7}
+.subs{margin:4px 0 0 4px;font-size:13px}
+.subs label{display:flex;gap:6px;align-items:center;margin:3px 0}
+.pr{font-size:11px;padding:2px 7px;border-radius:8px;margin-left:4px}
+.p3{background:#ff5a8a55}.p2{background:#ffb34755}.p1{background:#4cd9a555}
+.bar{height:10px;background:#ffffff18;border-radius:6px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;border-radius:6px}
+.x{background:none;border:none;color:#fff;opacity:.5;cursor:pointer;font-size:16px}
+.month{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.md{padding:8px 0;border-radius:12px;cursor:pointer;font-size:14px;position:relative}
+.md.o{opacity:.3}.md.today{outline:1px solid #c86dd7}.md.sel{background:linear-gradient(135deg,#c86dd7,#7b4cf0)}
+.dot{width:5px;height:5px;border-radius:50%;background:#ffb347;margin:2px auto 0}
+.bn{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:center;background:rgba(18,10,24,.95);backdrop-filter:blur(10px);padding:8px env(safe-area-inset-right) calc(8px + env(safe-area-inset-bottom)) env(safe-area-inset-left);border-radius:20px 20px 0 0}
+.bn button{flex:1;max-width:160px;background:none;border:none;color:#fff;opacity:.5;font-size:12px;cursor:pointer}
+.bn button div{font-size:22px}.bn button.on{opacity:1}
+.modal{position:fixed;inset:0;background:#000a;display:none;align-items:flex-end;justify-content:center;z-index:20}
+.modal.show{display:flex}
+.sheet{background:#21162a;width:100%;max-width:520px;border-radius:24px 24px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom))}
+@media(min-width:600px){.modal{align-items:center}.sheet{border-radius:24px}}
+.sheet input,.sheet select,.sheet textarea{width:100%;background:#2f2238;border:none;color:#fff;border-radius:10px;padding:10px;margin:4px 0 10px;font:inherit}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.emo{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.emo span{font-size:22px;padding:4px;border-radius:8px;cursor:pointer}
+.emo span.on{background:#c86dd7}
+.cols{display:flex;gap:8px;margin-bottom:12px}
+.cols span{width:28px;height:28px;border-radius:50%;cursor:pointer}
+.cols span.on{outline:3px solid #fff}
+h3{font-size:15px;margin-bottom:10px}
+.empty{opacity:.5;font-size:13px;text-align:center;padding:14px}
+</style></head><body>
+<div class="app">
+<header><div><h1 id="title">오늘</h1><div class="sub" id="dateLbl"></div></div><button class="btn pri" id="addBtn">＋ 추가</button></header>
+<div class="tile"><div class="nav"><button class="btn" id="prev">◀</button><button class="btn" id="todayB">오늘</button><button class="btn" id="next">▶</button></div><div class="week" id="week"></div></div>
+<section id="v-today"><div class="tile"><h3>🗓️ 오늘 일정</h3><div class="tlw" id="tlw"><div class="tl" id="tl"></div></div></div></section>
+<section id="v-todo" hidden><div class="tile" id="todos"></div></section>
+<section id="v-goal" hidden><div class="tile" id="goals"></div></section>
+<section id="v-cal" hidden><div class="tile"><div class="nav"><button class="btn" id="mp">◀</button><b id="mLbl"></b><button class="btn" id="mn">▶</button></div><div class="month" id="month"></div></div><div class="tile" id="calDay"></div></section>
+</div>
+<nav class="bn"><button data-v="today" class="on"><div>☀️</div>오늘</button><button data-v="todo"><div>✅</div>할 일</button><button data-v="goal"><div>🎯</div>목표</button><button data-v="cal"><div>📅</div>캘린더</button></nav>
+<div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
+<script>
+const $=s=>document.querySelector(s),COLORS=['#c86dd7','#7b4cf0','#4c9df0','#4cd9a5','#ffb347','#ff5a8a','#f0e14c'],
+EMOJI=['⏰','🧘','🏋️','🍳','🛵','🚗','🍱','☕','🔋','🌙','🛏️','📦','💪','📚','💰','🎯','✅','📝','🛒','❤️','🎉','🔧'],
+DN=['일','월','화','수','목','금','토'],K='moleplanner_v1';
+const ROUTINE=[['05:30','06:00','기상 & 스트레칭','🧘','#c86dd7'],['06:00','07:00','운동 + 샤워','🏋️','#ff5a8a'],['07:00','07:30','아침식사','🍳','#ffb347'],['07:30','08:00','배달앱 세팅/차량 점검','🚗','#4c9df0'],['08:00','12:00','오전 배달','🛵','#4cd9a5'],['12:00','13:00','점심 + 휴식','🍱','#ffb347'],['13:00','17:00','오후 배달','🛵','#4cd9a5'],['17:00','18:00','저녁 + 충전','🔋','#f0e14c'],['18:00','22:00','저녁 배달','🛵','#4cd9a5'],['22:00','23:00','복귀/장비 정리/스트레칭','🔧','#7b4cf0'],['23:00','23:59','취침','🛏️','#7b4cf0']];
+let S=JSON.parse(localStorage.getItem(K)||'null');
+if(!S){S={routine:ROUTINE.map((r,i)=>({id:'r'+i,start:r[0],end:r[1],title:r[2],icon:r[3],color:r[4]})),events:{},skip:{},todos:[{id:'t1',title:'오일 교환 예약',icon:'🔧',color:'#4c9df0',pri:3,done:false,subs:[{t:'정비소 전화',d:false},{t:'시간 확인',d:false}]}],goals:[{id:'g1',title:'이번 달 배달 수익 목표',icon:'💰',color:'#4cd9a5',cur:120,target:300,unit:'만원'}]};}
+const save=()=>localStorage.setItem(K,JSON.stringify(S));save();
+let sel=new Date(),view='today',mon=new Date();
+const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const same=(a,b)=>ymd(a)==ymd(b),mins=t=>{const[h,m]=t.split(':');return +h*60+ +m};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function dayEvents(d){const k=ymd(d),sk=S.skip[k]||[];return [...S.routine.filter(r=>!sk.includes(r.id)).map(r=>({...r,rec:1})),...(S.events[k]||[])].sort((a,b)=>mins(a.start)-mins(b.start))}
+function render(){
+ $('#dateLbl').textContent=`${sel.getFullYear()}년 ${sel.getMonth()+1}월 ${sel.getDate()}일 (${DN[sel.getDay()]})`;
+ $('#title').textContent={today:'오늘',todo:'할 일',goal:'목표',cal:'캘린더'}[view];
+ const w0=new Date(sel);w0.setDate(sel.getDate()-sel.getDay());let h='';
+ for(let i=0;i<7;i++){const d=new Date(w0);d.setDate(w0.getDate()+i);h+=`<div class="wd ${same(d,sel)?'sel':''} ${same(d,new Date())?'today':''}" data-d="${ymd(d)}">${DN[i]}<b>${d.getDate()}</b></div>`}
+ $('#week').innerHTML=h;
+ document.querySelectorAll('section').forEach(s=>s.hidden=s.id!='v-'+view);
+ document.querySelectorAll('.bn button').forEach(b=>b.classList.toggle('on',b.dataset.v==view));
+ ({today:rTL,todo:rTodo,goal:rGoal,cal:rCal})[view]();
+}
+const HP=56,H0=5;
+function rTL(){
+ let h='';for(let i=H0;i<24;i++)h+=`<div class="hr"><span>${String(i).padStart(2,'0')}:00</span></div>`;
+ const now=new Date(),nm=now.getHours()*60+now.getMinutes(),isT=same(sel,now);
+ dayEvents(sel).forEach(e=>{const s=mins(e.start),en=Math.max(mins(e.end),s+20),top=(s-H0*60)/60*HP,ht=(en-s)/60*HP-3;
+  const cur=isT&&nm>=s&&nm<mins(e.end);
+  h+=`<div class="ev ${cur?'now':''}" data-id="${e.id}" style="top:${Math.max(top,0)}px;height:${ht}px;border-color:${e.color}"><span>${e.icon}</span><div><b>${esc(e.title)}</b>${cur?' ⏳ 진행 중':''}<small>${e.start}–${e.end}${e.rec?' · 🔁 루틴':''}</small></div></div>`});
+ if(isT&&nm>=H0*60)h+=`<div class="nowline" style="top:${(nm-H0*60)/60*HP}px"></div>`;
+ $('#tl').innerHTML=h;
+ document.querySelectorAll('.ev').forEach(el=>el.onclick=()=>evForm(dayEvents(sel).find(e=>e.id==el.dataset.id)));
+ if(isT&&!rTL.done){rTL.done=1;$('#tlw').scrollTop=Math.max(0,(nm-H0*60)/60*HP-120)}
+}
+function rTodo(){
+ const L=[...S.todos].sort((a,b)=>a.done-b.done||b.pri-a.pri);
+ $('#todos').innerHTML='<h3>✅ 할 일 목록</h3>'+(L.length?L.map(t=>`<div class="item ${t.done?'done':''}"><input type="checkbox" class="chk" data-t="${t.id}" ${t.done?'checked':''}><div class="ico" style="background:${t.color}33">${t.icon}</div><div class="grow"><span class="t">${esc(t.title)}</span><span class="pr p${t.pri}">${['','낮음','보통','높음'][t.pri]}</span><div class="subs">${t.subs.map((s,i)=>`<label class="${s.d?'done':''}"><input type="checkbox" data-s="${t.id}:${i}" ${s.d?'checked':''}><span class="t">${esc(s.t)}</span></label>`).join('')}</div></div><button class="x" data-e="${t.id}">✏️</button></div>`).join(''):'<div class="empty">할 일이 없어요 🎉</div>');
+ document.querySelectorAll('[data-t]').forEach(c=>c.onchange=()=>{const t=S.todos.find(x=>x.id==c.dataset.t);t.done=c.checked;t.subs.forEach(s=>s.d=c.checked);save();render()});
+ document.querySelectorAll('[data-s]').forEach(c=>c.onchange=()=>{const[id,i]=c.dataset.s.split(':'),t=S.todos.find(x=>x.id==id);t.subs[i].d=c.checked;t.done=t.subs.every(s=>s.d);save();render()});
+ document.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>todoForm(S.todos.find(x=>x.id==b.dataset.e)));
+}
+function rGoal(){
+ $('#goals').innerHTML='<h3>🎯 나의 목표</h3>'+(S.goals.length?S.goals.map(g=>{const p=Math.min(100,Math.round(g.cur/g.target*100))||0;return `<div class="item"><div class="ico" style="background:${g.color}33">${g.icon}</div><div class="grow"><b>${esc(g.title)}</b> <small style="opacity:.7">${g.cur}/${g.target}${esc(g.unit)} · ${p}%</small><div class="bar"><i style="width:${p}%;background:${g.color}"></i></div></div><button class="btn" data-m="${g.id}">−</button><button class="btn" data-p="${g.id}">＋</button><button class="x" data-g="${g.id}">✏️</button></div>`}).join(''):'<div class="empty">목표를 추가해 보세요</div>');
+ const step=(id,d)=>{const g=S.goals.find(x=>x.id==id);g.cur=Math.max(0,g.cur+d*Math.max(1,Math.round(g.target/20)));save();render()};
+ document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>step(b.dataset.p,1));
+ document.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>step(b.dataset.m,-1));
+ document.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>goalForm(S.goals.find(x=>x.id==b.dataset.g)));
+}
+function rCal(){
+ $('#mLbl').textContent=`${mon.getFullYear()}년 ${mon.getMonth()+1}월`;
+ const f=new Date(mon.getFullYear(),mon.getMonth(),1);f.setDate(1-f.getDay());let h=DN.map(d=>`<div style="font-size:12px;opacity:.6">${d}</div>`).join('');
+ for(let i=0;i<42;i++){const d=new Date(f);d.setDate(f.getDate()+i);h+=`<div class="md ${d.getMonth()!=mon.getMonth()?'o':''} ${same(d,new Date())?'today':''} ${same(d,sel)?'sel':''}" data-d="${ymd(d)}">${d.getDate()}${(S.events[ymd(d)]||[]).length?'<div class="dot"></div>':''}</div>`}
+ $('#month').innerHTML=h;
+ const ex=S.events[ymd(sel)]||[];
+ $('#calDay').innerHTML=`<h3>📌 ${sel.getMonth()+1}/${sel.getDate()} 추가 일정</h3>`+(ex.length?ex.map(e=>`<div class="item"><div class="ico" style="background:${e.color}33">${e.icon}</div><div class="grow">${esc(e.title)}<br><small style="opacity:.6">${e.start}–${e.end}</small></div></div>`).join(''):'<div class="empty">루틴 외 일정 없음</div>');
+}
+function pickers(icon,color){return `<div class="emo">${EMOJI.map(e=>`<span class="${e==icon?'on':''}">${e}</span>`).join('')}</div><div class="cols">${COLORS.map(c=>`<span style="background:${c}" data-c="${c}" class="${c==color?'on':''}"></span>`).join('')}</div>`}
+function openSheet(html,onSave,onDel){
+ $('#sheet').innerHTML=html+`<div class="row">${onDel?'<button class="btn" id="fDel">🗑️ 삭제</button>':''}<button class="btn" id="fCan">취소</button><button class="btn pri" id="fSave">저장</button></div>`;
+ $('#modal').classList.add('show');
+ let st={icon:$('.emo .on')?.textContent||EMOJI[0],color:$('.cols .on')?.dataset.c||COLORS[0]};
+ document.querySelectorAll('.emo span').forEach(s=>s.onclick=()=>{document.querySelectorAll('.emo span').forEach(x=>x.classList.remove('on'));s.classList.add('on');st.icon=s.textContent});
+ document.querySelectorAll('.cols span').forEach(s=>s.onclick=()=>{document.querySelectorAll('.cols span').forEach(x=>x.classList.remove('on'));s.classList.add('on');st.color=s.dataset.c});
+ const close=()=>$('#modal').classList.remove('show');
+ $('#fCan').onclick=close;$('#fSave').onclick=()=>{if(onSave(st)!==false){save();close();render()}};
+ if(onDel)$('#fDel').onclick=()=>{if(confirm('삭제할까요?')){onDel();save();close();render()}};
+}
+const v=id=>$('#'+id).value.trim(),uid=()=>Math.random().toString(36).slice(2,9);
+function evForm(e){
+ e=e||{start:'09:00',end:'10:00',icon:'📝',color:COLORS[0],title:''};
+ openSheet(`<h3>${e.id?'일정 편집':'새 일정'}</h3><input id="fT" placeholder="제목" value="${esc(e.title)}"><div class="row"><div>시작<input type="time" id="fS" value="${e.start}"></div><div>종료<input type="time" id="fE" value="${e.end}"></div></div>${e.rec?'<label style="font-size:13px"><input type="checkbox" id="fAll" checked style="width:auto"> 🔁 매일 루틴 전체에 적용</label><br><br>':''}${pickers(e.icon,e.color)}`,
+ st=>{const t=v('fT');if(!t){alert('제목을 입력하세요');return false}const o={title:t,start:v('fS'),end:v('fE'),icon:st.icon,color:st.color},k=ymd(sel);
+  if(e.rec){if($('#fAll').checked)Object.assign(S.routine.find(r=>r.id==e.id),o);else{(S.skip[k]=S.skip[k]||[]).push(e.id);(S.events[k]=S.events[k]||[]).push({...o,id:uid()})}}
+  else if(e.id)Object.assign(S.events[k].find(x=>x.id==e.id),o);else(S.events[k]=S.events[k]||[]).push({...o,id:uid()})},
+ e.id?()=>{const k=ymd(sel);if(e.rec)(S.skip[k]=S.skip[k]||[]).push(e.id);else S.events[k]=S.events[k].filter(x=>x.id!=e.id)}:null)}
+function todoForm(t){
+ t=t||{title:'',icon:'✅',color:COLORS[0],pri:2,subs:[]};
+ openSheet(`<h3>${t.id?'할 일 편집':'새 할 일'}</h3><input id="fT" placeholder="할 일" value="${esc(t.title)}">우선순위<select id="fP">${[3,2,1].map(p=>`<option value="${p}" ${t.pri==p?'selected':''}>${['','낮음','보통','높음'][p]}</option>`).join('')}</select>하위 작업 (줄마다 하나)<textarea id="fSub" rows="3">${esc(t.subs.map(s=>s.t).join('\n'))}</textarea>${pickers(t.icon,t.color)}`,
+ st=>{const ti=v('fT');if(!ti){alert('내용을 입력하세요');return false}const subs=v('fSub').split('\n').map(s=>s.trim()).filter(Boolean).map(s=>({t:s,d:(t.subs.find(x=>x.t==s)||{}).d||false}));
+  const o={title:ti,pri:+v('fP'),subs,icon:st.icon,color:st.color};if(t.id)Object.assign(S.todos.find(x=>x.id==t.id),o);else S.todos.push({...o,id:uid(),done:false})},
+ t.id?()=>S.todos=S.todos.filter(x=>x.id!=t.id):null)}
+function goalForm(g){
+ g=g||{title:'',icon:'🎯',color:COLORS[3],cur:0,target:100,unit:''};
+ openSheet(`<h3>${g.id?'목표 편집':'새 목표'}</h3><input id="fT" placeholder="목표" value="${esc(g.title)}"><div class="row"><div>현재<input type="number" id="fC" value="${g.cur}"></div><div>목표치<input type="number" id="fG" value="${g.target}"></div><div>단위<input id="fU" value="${esc(g.unit)}"></div></div>${pickers(g.icon,g.color)}`,
+ st=>{const ti=v('fT');if(!ti){alert('목표를 입력하세요');return false}const o={title:ti,cur:+v('fC')||0,target:+v('fG')||1,unit:v('fU'),icon:st.icon,color:st.color};if(g.id)Object.assign(S.goals.find(x=>x.id==g.id),o);else S.goals.push({...o,id:uid()})},
+ g.id?()=>S.goals=S.goals.filter(x=>x.id!=g.id):null)}
+const shift=n=>{sel=new Date(sel);sel.setDate(sel.getDate()+n);mon=new Date(sel);render()};
+$('#prev').onclick=()=>shift(-1);$('#next').onclick=()=>shift(1);$('#todayB').onclick=()=>{sel=new Date();mon=new Date();render()};
+$('#mp').onclick=()=>{mon.setMonth(mon.getMonth()-1,1);render()};$('#mn').onclick=()=>{mon.setMonth(mon.getMonth()+1,1);render()};
+document.addEventListener('click',e=>{const d=e.target.closest('[data-d]');if(d){const[y,m,dd]=d.dataset.d.split('-');sel=new Date(y,m-1,dd);if(view=='cal')mon=new Date(sel);render()}});
+document.querySelectorAll('.bn button').forEach(b=>b.onclick=()=>{view=b.dataset.v;render()});
+$('#addBtn').onclick=()=>({today:evForm,cal:evForm,todo:todoForm,goal:goalForm})[view]();
+$('#modal').onclick=e=>{if(e.target.id=='modal')$('#modal').classList.remove('show')};
+render();setInterval(()=>view=='today'&&rTL(),60000);
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+</script></body></html>
